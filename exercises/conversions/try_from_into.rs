@@ -27,8 +27,6 @@ enum IntoColorError {
     IntConversion,
 }
 
-// I AM NOT DONE
-
 // Your task is to complete this implementation and return an Ok result of inner
 // type Color. You need to create an implementation for a tuple of three
 // integers, an array of three integers, and a slice of integers.
@@ -41,6 +39,22 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        Ok(tuple.0).and_then(|r| {
+            (r >= 0 && r <= 255).then_some(r as u8).ok_or(IntoColorError::IntConversion)
+        })
+        .and_then(|r| {
+            Ok(tuple.1).and_then(|g| {
+                (g >= 0 && g <= 255).then_some(g as u8).ok_or(IntoColorError::IntConversion)
+            })
+            .map(|g| (r, g))
+        })
+        .and_then(|(r, g)| {
+            Ok(tuple.2).and_then(|b| {
+                (b >= 0 && b <= 255).then_some(b as u8).ok_or(IntoColorError::IntConversion)
+            })
+            .map(|b| (r, g, b))
+        })
+        .map(|(r, g, b)| Color{red: r, green: g, blue: b})
     }
 }
 
@@ -48,6 +62,22 @@ impl TryFrom<(i16, i16, i16)> for Color {
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        Ok(arr[0]).and_then(|r| {
+            (r >= 0 && r <= 255).then_some(r as u8).ok_or(IntoColorError::IntConversion)
+        })
+        .and_then(|r| {
+            Ok(arr[1]).and_then(|g| {
+                (g >= 0 && g <= 255).then_some(g as u8).ok_or(IntoColorError::IntConversion)
+            })
+            .map(|g| (r, g))
+        })
+        .and_then(|(r, g)| {
+            Ok(arr[2]).and_then(|b| {
+                (b >= 0 && b <= 255).then_some(b as u8).ok_or(IntoColorError::IntConversion)
+            })
+            .map(|b| (r, g, b))
+        })
+        .map(|(r, g, b)| Color{red: r, green: g, blue: b})
     }
 }
 
@@ -55,6 +85,27 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        Ok(slice).and_then(|arr| {
+            (arr.len() == 3).then(|| arr).ok_or(IntoColorError::BadLen)
+        })
+        .and_then(|arr| {
+            Ok(arr[0]).and_then(|r| {
+                (r >= 0 && r <= 255).then_some(r as u8).ok_or(IntoColorError::IntConversion)
+            })
+            .and_then(|r| {
+                Ok(arr[1]).and_then(|g| {
+                    (g >= 0 && g <= 255).then_some(g as u8).ok_or(IntoColorError::IntConversion)
+                })
+                .map(|g| (r, g))
+            })
+            .and_then(|(r, g)| {
+                Ok(arr[2]).and_then(|b| {
+                    (b >= 0 && b <= 255).then_some(b as u8).ok_or(IntoColorError::IntConversion)
+                })
+                .map(|b| (r, g, b))
+            })
+            .map(|(r, g, b)| Color{red: r, green: g, blue: b})
+        })
     }
 }
 

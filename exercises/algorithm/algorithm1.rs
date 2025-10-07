@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -69,14 +68,57 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+	pub fn merge(mut list_a:LinkedList<T>,mut list_b:LinkedList<T>) -> Self
+	where
+        T: Ord,
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
-        }
+		let mut merged_list = Self::new();
+        
+        let mut current_a = list_a.start.take();
+        let mut current_b = list_b.start.take();
+        
+        let mut current_tail_ptr: &mut Option<NonNull<Node<T>>> = &mut merged_list.start;
+        
+        let mut last_node_ptr: Option<NonNull<Node<T>>> = None;
+
+		unsafe {
+			while current_a.is_some() && current_b.is_some() {
+                
+                let (mut next_node, next_list_ptr) = {
+                    let node_a_ref = current_a.unwrap().as_ref();
+                    let node_b_ref = current_b.unwrap().as_ref();
+                    
+                    if node_a_ref.val <= node_b_ref.val {
+                        (current_a.take().unwrap(), &mut current_a)
+                    } else {
+                        (current_b.take().unwrap(), &mut current_b)
+                    }
+                };
+
+                *current_tail_ptr = Some(next_node);
+                
+                last_node_ptr = Some(next_node);
+
+                *next_list_ptr = next_node.as_mut().next.take();
+                
+                
+                current_tail_ptr = &mut next_node.as_mut().next;
+			}
+       
+            let remaining = current_a.or(current_b);
+            
+            if let Some(remaining_start) = remaining {
+                *current_tail_ptr = Some(remaining_start);
+                
+                merged_list.end = list_a.end.or(list_b.end);
+            } else {
+                merged_list.end = last_node_ptr;
+            }
+		}
+
+		merged_list.length = list_a.length + list_b.length;
+
+		merged_list
 	}
 }
 
